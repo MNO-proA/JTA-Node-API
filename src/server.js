@@ -16,9 +16,9 @@ app.use(helmet());
 // Customize Helmet's cross-origin resource policy
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 
-// Configure CORS to allow requests from your frontend's origin
+// Configure CORS to allow requests from any origin
 app.use(cors({
-    origin: 'https://jta-aws-frontend.onrender.com', // Replace with your frontend's URL
+    origin: '*', // Allow any origin
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     optionsSuccessStatus: 200
