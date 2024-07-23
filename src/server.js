@@ -2,12 +2,18 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const routes = require('./routes');
+const cors = require('cors');
 
 dotenv.config();
 
 const app = express();
 app.use(express.json());
 
+
+app.use(cors({
+    origin: 'https://jta-aws-frontend.onrender.com',
+    optionsSuccessStatus: 200
+}));
 app.use('/', routes);
 
 // Only start the server if we're not in a Lambda environment
