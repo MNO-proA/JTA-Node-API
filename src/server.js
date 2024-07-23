@@ -13,12 +13,23 @@ app.use(express.json());
 // Use Helmet to set various HTTP headers for security
 app.use(helmet());
 
-// Customize Helmet's cross-origin resource policy
-app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
+// Configure CORS to allow requests from specific origins
+const allowedOrigins = [
+    'http://localhost:5173', // Add your frontend's URL here
+    'https://jta-aws-frontend.onrender.com' // Add any other allowed origins here
+];
 
-// Configure CORS to allow requests from any origin
 app.use(cors({
-    origin: '*', // Allow any origin
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.indexOf(origin) === -1) {
+            const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+            return callback(new Error(msg), false);
+        }
+        return callback(null, true);
+    },
+    credentials: true, // Allow credentials (cookies, authorization headers, etc.)
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     optionsSuccessStatus: 200
