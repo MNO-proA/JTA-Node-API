@@ -1,0 +1,4 @@
+serverless deploy
+serverless offline start
+npm run local
+npm run deploy
