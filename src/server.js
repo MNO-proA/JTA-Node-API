@@ -16,7 +16,8 @@ app.use(helmet());
 // Configure CORS to allow requests from specific origins
 const allowedOrigins = [
     'http://localhost:5173', // Add your frontend's URL here
-    'https://jta-aws-frontend.onrender.com' // Add any other allowed origins here
+    'https://jta-aws-frontend.onrender.com', 
+    'https://main.dcbanxswb8ju1.amplifyapp.com/'
 ];
 
 app.use(cors({
