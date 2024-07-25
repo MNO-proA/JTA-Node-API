@@ -17,7 +17,7 @@ app.use(helmet());
 const allowedOrigins = [
     'http://localhost:5173', // Add your frontend's URL here
     'https://jta-aws-frontend.onrender.com', 
-    'https://main.dcbanxswb8ju1.amplifyapp.com/'
+    'https://main.dcbanxswb8ju1.amplifyapp.com'
 ];
 
 app.use(cors({
