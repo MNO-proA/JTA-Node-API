@@ -19,5 +19,11 @@ const verifyToken = (req, res, next) => {
   }
 };
 
-module.exports = { createAccessToken, verifyToken };
+const checkAdminAccess = (req, res, next) => {
+  if (req.user.role !== 'ADMIN') {
+    return res.status(403).json({ detail: 'Access denied. Admin rights required.' });
+  }
+  next();
+};
 
+module.exports = { createAccessToken, verifyToken, checkAdminAccess };

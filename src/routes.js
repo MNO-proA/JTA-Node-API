@@ -1,7 +1,7 @@
 const express = require('express');
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
 const { DynamoDBDocumentClient, PutCommand, ScanCommand, GetCommand, UpdateCommand, DeleteCommand } = require('@aws-sdk/lib-dynamodb');
-const { createAccessToken, verifyToken } = require('./auth');
+const { createAccessToken, verifyToken, checkAdminAccess } = require('./auth');
 
 const router = express.Router();
 
@@ -11,15 +11,19 @@ const dynamoDB = DynamoDBDocumentClient.from(client);
 // Login route
 router.post('/token', (req, res) => {
   const { username, password } = req.body;
-  if (username !== process.env.API_USERNAME || password !== process.env.API_PASSWORD) {
+  if (username === process.env.ADMIN_USER && password === process.env.ADMIN_PASSWORD) {
+    const accessToken = createAccessToken({ sub: username, role: 'ADMIN' });
+    res.json({ access_token: accessToken, token_type: 'bearer', role: 'ADMIN' });
+  } else if (username === process.env.STAFF_VIEWER && password === process.env.STAFF_VIEWER_PASSWORD) {
+    const accessToken = createAccessToken({ sub: username, role: 'STAFF_VIEWER' });
+    res.json({ access_token: accessToken, token_type: 'bearer', role: 'STAFF_VIEWER' });
+  } else {
     return res.status(401).json({ detail: 'Incorrect username or password' });
   }
-  const accessToken = createAccessToken({ sub: username });
-  res.json({ access_token: accessToken, token_type: 'bearer' });
 });
 
 // Staff routes
-router.post('/staff', verifyToken, async (req, res) => {
+router.post('/staff', verifyToken, checkAdminAccess, async (req, res) => {
   try {
     const command = new PutCommand({
       TableName: 'Staff',
@@ -59,7 +63,7 @@ router.get('/staff/:staffId', verifyToken, async (req, res) => {
   }
 });
 
-router.put('/staff/:staffId', verifyToken, async (req, res) => {
+router.put('/staff/:staffId', verifyToken, checkAdminAccess, async (req, res) => {
   try {
     const { updates } = req.body;
     const updateExpression = 'set ' + Object.keys(updates).map(key => `${key} = :${key}`).join(', ');
@@ -82,7 +86,7 @@ router.put('/staff/:staffId', verifyToken, async (req, res) => {
   }
 });
 
-router.delete('/staff/:staffId', verifyToken, async (req, res) => {
+router.delete('/staff/:staffId', verifyToken, checkAdminAccess, async (req, res) => {
   try {
     const command = new DeleteCommand({
       TableName: 'Staff',
@@ -96,7 +100,7 @@ router.delete('/staff/:staffId', verifyToken, async (req, res) => {
 });
 
 // Shifts routes
-router.post('/shifts', verifyToken, async (req, res) => {
+router.post('/shifts', verifyToken, checkAdminAccess, async (req, res) => {
   try {
     const command = new PutCommand({
       TableName: 'Shifts',
@@ -139,7 +143,7 @@ router.get('/shifts/:shiftId/:startDate', verifyToken, async (req, res) => {
   }
 });
 
-router.put('/shifts/:shiftId/:startDate', verifyToken, async (req, res) => {
+router.put('/shifts/:shiftId/:startDate', verifyToken, checkAdminAccess, async (req, res) => {
   try {
     const { updates } = req.body;
     const updateExpression = 'set ' + Object.keys(updates).map(key => `${key} = :${key}`).join(', ');
@@ -165,7 +169,7 @@ router.put('/shifts/:shiftId/:startDate', verifyToken, async (req, res) => {
   }
 });
 
-router.delete('/shifts/:shiftId/:startDate', verifyToken, async (req, res) => {
+router.delete('/shifts/:shiftId/:startDate', verifyToken, checkAdminAccess, async (req, res) => {
   try {
     const command = new DeleteCommand({
       TableName: 'Shifts',
@@ -182,7 +186,7 @@ router.delete('/shifts/:shiftId/:startDate', verifyToken, async (req, res) => {
 });
 
 // Expenses routes
-router.post('/expense', verifyToken, async (req, res) => {
+router.post('/expense', verifyToken, checkAdminAccess, async (req, res) => {
   try {
     const command = new PutCommand({
       TableName: 'Expenses',
@@ -225,7 +229,7 @@ router.get('/expense/:expenseId/:date', verifyToken, async (req, res) => {
   }
 });
 
-router.put('/expense/:expenseId/:date', verifyToken, async (req, res) => {
+router.put('/expense/:expenseId/:date', verifyToken, checkAdminAccess, async (req, res) => {
   try {
     const { updates } = req.body;
     const updateExpression = 'set ' + Object.keys(updates).map(key => `${key} = :${key}`).join(', ');
@@ -251,7 +255,7 @@ router.put('/expense/:expenseId/:date', verifyToken, async (req, res) => {
   }
 });
 
-router.delete('/expense/:expenseId/:date', verifyToken, async (req, res) => {
+router.delete('/expense/:expenseId/:date', verifyToken, checkAdminAccess, async (req, res) => {
   try {
     const command = new DeleteCommand({
       TableName: 'Expenses',
